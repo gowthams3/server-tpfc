@@ -84,7 +84,7 @@ app.get("/api/phonepe/callback", (req, res) => {
   }
 
   // Redirect to React frontend with transactionId and bookingId
-  const frontendUrl = `https://tpfc.in/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
+  const frontendUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
   res.redirect(frontendUrl);
 });
 

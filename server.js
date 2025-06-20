@@ -16,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/api/phonepe/initiate", async (req, res) => {
+  console.log("Received request to /api/phonepe/initiate");
   try {
     const { amount, orderId, userDetails } = req.body;
 

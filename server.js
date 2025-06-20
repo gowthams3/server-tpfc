@@ -20,7 +20,7 @@ app.post("/api/phonepe/initiate", async (req, res) => {
   try {
     const { amount, orderId, userDetails } = req.body;
 
-    const redirectUrl = `${process.env.BASE_URL}api/phonepe/callback?bookingId=${orderId}`;
+    const redirectUrl = `${process.env.BASE_URL}payment-tpfc/api/phonepe/callback?bookingId=${orderId}`;
 
     const payload = {
       merchantId: MERCHANT_ID,

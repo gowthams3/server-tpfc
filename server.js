@@ -75,7 +75,7 @@ app.post("/api/phonepe/initiate", async (req, res) => {
 });
 
 
-app.get("/payment-tpfc/api/phonepe/verify", async (req, res) => {
+app.all("/payment-tpfc/api/phonepe/verify", async (req, res) => {
   const { transactionId } = req.query;
 
   if (!transactionId) {
@@ -116,18 +116,18 @@ app.get("/payment-tpfc/api/phonepe/verify", async (req, res) => {
 
 
 
-app.get("/payment-tpfc/api/phonepe/callback", (req, res) => {
-  const transactionId = req.query.transactionId;
-  const bookingId = req.query.bookingId;
+app.all("/payment-tpfc/api/phonepe/callback", (req, res) => {
+  const transactionId = req.body.transactionId || req.query.transactionId;
+  const bookingId = req.body.bookingId || req.query.bookingId;
 
   if (!transactionId || !bookingId) {
     return res.status(400).send("Missing transactionId or bookingId");
   }
 
-  // Redirect to React frontend with transactionId and bookingId
-  const frontendUrl = `${process.env.BASE_URL}booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
+  const frontendUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
   res.redirect(frontendUrl);
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

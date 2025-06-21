@@ -99,6 +99,8 @@ app.all("/payment-tpfc/api/phonepe/verify", async (req, res) => {
       .update(`/pg/v1/status/${MERCHANT_ID}/${transactionId}` + SALT_KEY)
       .digest("hex") + "###" + SALT_INDEX;
 
+  console.log("Verifying transaction:", transactionId);
+
   try {
     const response = await fetch(
       `https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/status/${MERCHANT_ID}/${transactionId}`,

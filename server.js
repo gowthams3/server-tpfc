@@ -15,6 +15,7 @@ const SALT_INDEX = process.env.SALT_INDEX;
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.text({ type: "*/*" }));
 
 app.use((req, res, next) => {
   console.log("🔍 Incoming Request");
@@ -155,38 +156,40 @@ app.all("/payment-tpfc/api/phonepe/verify", async (req, res) => {
 
 
 app.all("/payment-tpfc/api/phonepe/callback", async (req, res) => {
-  const method = req.method;
-  const responseEncoded =
-    req.body?.response ||
-    req.query?.response ||
-    (typeof req.body === "string" ? req.body : null); // fallback if body is a raw string
+  const responseBase64 = req.body?.response || req.query?.response;
   const bookingId = req.query?.bookingId;
 
-  console.log("📨 Method:", method);
-  console.log("📦 Encoded Response:", responseEncoded);
+  console.log("📦 Encoded Response:", responseBase64);
   console.log("📦 Booking ID:", bookingId);
+  console.log("📨 Method:", req.method);
+  console.log("🧪 Headers:", req.headers);
+  console.log("🧪 Body Type:", typeof req.body);
+  console.log("🧪 Body:", req.body);
+  console.log("🧪 Query:", req.query);
 
-  if (!responseEncoded || !bookingId) {
+  if (!responseBase64 || !bookingId) {
+    console.warn("⚠️ Missing response or bookingId");
     return res.status(200).send("Callback received but missing data");
   }
 
   try {
-    const decoded = JSON.parse(
-      Buffer.from(responseEncoded, "base64").toString("utf-8")
-    );
+    const decoded = JSON.parse(Buffer.from(responseBase64, "base64").toString("utf-8"));
     const transactionId = decoded?.data?.transactionId;
 
     if (!transactionId) {
       return res.status(400).send("Missing transactionId in decoded response");
     }
 
+    // You could update your DB here based on transactionId or bookingId
+
     const redirectUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
     return res.redirect(redirectUrl);
   } catch (error) {
-    console.error("❌ Decode error:", error);
+    console.error("❌ Callback decode error:", error);
     return res.status(500).send("Internal Server Error");
   }
 });
+
 
 
 

@@ -122,6 +122,9 @@ app.post("/payment-tpfc/api/phonepe/callback", (req, res) => {
     const { response } = req.body;
     const { bookingId } = req.query;
 
+    console.log("response", response);
+    console.log("bookingId", bookingId);
+
     if (!response || !bookingId) {
       return res.status(400).send("Missing response or bookingId");
     }

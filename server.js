@@ -188,7 +188,7 @@ app.all("/payment-tpfc/api/phonepe/callback", async (req, res) => {
 
     // Optional: Update DB or trigger email, etc.
 
-    const redirectUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
+    const redirectUrl = `http://localhost:5173/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
     return res.redirect(redirectUrl);
   } catch (error) {
     console.error("❌ Callback decode error:", error);

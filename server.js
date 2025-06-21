@@ -19,7 +19,8 @@ app.post("/api/phonepe/initiate", async (req, res) => {
   try {
     const { amount, orderId, userDetails } = req.body;
 
-    const redirectUrl = `${process.env.BASE_URL}payment-tpfc/api/phonepe/callback?bookingId=${orderId}`;
+    // const redirectUrl = `${process.env.BASE_URL}payment-tpfc/api/phonepe/callback?bookingId=${orderId}`;
+    const redirectUrl = `${process.env.BASE_URL}api/phonepe/callback?bookingId=${orderId}`;
 
     const payload = {
       merchantId: MERCHANT_ID,
@@ -116,7 +117,7 @@ app.get("/api/phonepe/verify", async (req, res) => {
 
 
 
-app.get("/payment-tpfc/api/phonepe/callback", (req, res) => {
+app.get("api/phonepe/callback", (req, res) => {
   console.log("callback running")
   const transactionId = req.query.transactionId;
   const bookingId = req.query.bookingId;
@@ -126,7 +127,7 @@ app.get("/payment-tpfc/api/phonepe/callback", (req, res) => {
   }
 
   // Redirect to React frontend with transactionId and bookingId
-  const frontendUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
+  const frontendUrl = `${process.env.BASE_URL}booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
   res.redirect(frontendUrl);
 });
 

@@ -117,20 +117,48 @@ app.all("/payment-tpfc/api/phonepe/verify", async (req, res) => {
 
 
 
-app.post("/payment-tpfc/api/phonepe/callback", (req, res) => {
+// app.post("/payment-tpfc/api/phonepe/callback", (req, res) => {
+//   try {
+//     const { response } = req.body;
+//     const { bookingId } = req.query;
+
+//     console.log("response", response);
+//     console.log("bookingId", bookingId);
+
+//     if (!response || !bookingId) {
+//       return res.status(400).send("Missing response or bookingId");
+//     }
+
+//     const decoded = JSON.parse(Buffer.from(response, "base64").toString("utf-8"));
+//     const transactionId = decoded.data?.transactionId;
+
+//     if (!transactionId) {
+//       return res.status(400).send("Missing transactionId in decoded response");
+//     }
+
+//     const redirectUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
+//     return res.redirect(redirectUrl);
+//   } catch (error) {
+//     console.error("Callback decode error:", error);
+//     return res.status(500).send("Internal Server Error");
+//   }
+// });
+
+
+const handlePhonePeCallback = (req, res) => {
+  const responseBase64 = req.body?.response || req.query?.response;
+  const bookingId = req.query.bookingId;
+
+  console.log("📦 Encoded Response:", responseBase64);
+  console.log("📦 Booking ID:", bookingId);
+
+  if (!responseBase64 || !bookingId) {
+    return res.status(400).send("Missing response or bookingId");
+  }
+
   try {
-    const { response } = req.body;
-    const { bookingId } = req.query;
-
-    console.log("response", response);
-    console.log("bookingId", bookingId);
-
-    if (!response || !bookingId) {
-      return res.status(400).send("Missing response or bookingId");
-    }
-
-    const decoded = JSON.parse(Buffer.from(response, "base64").toString("utf-8"));
-    const transactionId = decoded.data?.transactionId;
+    const decoded = JSON.parse(Buffer.from(responseBase64, "base64").toString("utf-8"));
+    const transactionId = decoded.transactionId || decoded.data?.transactionId;
 
     if (!transactionId) {
       return res.status(400).send("Missing transactionId in decoded response");
@@ -138,11 +166,15 @@ app.post("/payment-tpfc/api/phonepe/callback", (req, res) => {
 
     const redirectUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
     return res.redirect(redirectUrl);
-  } catch (error) {
-    console.error("Callback decode error:", error);
-    return res.status(500).send("Internal Server Error");
+  } catch (err) {
+    console.error("❌ Error decoding PhonePe callback:", err);
+    return res.status(500).send("Failed to decode response");
   }
-});
+};
+
+// 👇 Place these two lines after your route handlers
+app.post("/payment-tpfc/api/phonepe/callback", handlePhonePeCallback);
+app.get("/payment-tpfc/api/phonepe/callback", handlePhonePeCallback);
 
 
 

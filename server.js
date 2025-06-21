@@ -117,21 +117,29 @@ app.all("/payment-tpfc/api/phonepe/verify", async (req, res) => {
 
 
 app.post("/payment-tpfc/api/phonepe/callback", (req, res) => {
-  // console.log("Callback received:", req.body);
-  // console.log("Callback received:", req.query);
-  
-  // const transactionId = req.body.transactionId || req.query.transactionId;
-  const bookingId = req.body.bookingId || req.query.bookingId;
+  try {
+    const { response } = req.body;
+    const { bookingId } = req.query;
 
-  // if (!transactionId || !bookingId) {
-  if (!bookingId) {
-    console.error("Callback error:", { body: req.body, query: req.query });
-    return res.status(400).send("Missing bookingId");
+    if (!response || !bookingId) {
+      return res.status(400).send("Missing response or bookingId");
+    }
+
+    const decoded = JSON.parse(Buffer.from(response, "base64").toString("utf-8"));
+    const transactionId = decoded.data?.transactionId;
+
+    if (!transactionId) {
+      return res.status(400).send("Missing transactionId in decoded response");
+    }
+
+    const redirectUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
+    return res.redirect(redirectUrl);
+  } catch (error) {
+    console.error("Callback decode error:", error);
+    return res.status(500).send("Internal Server Error");
   }
-
-  const frontendUrl = `https://tpfc.in/payment-tpfc/booking-success?bookingId=${bookingId}`;
-  return res.redirect(frontendUrl);
 });
+
 
 
 

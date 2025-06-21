@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import crypto from "crypto";
-import fetch from "node-fetch"; // If using CommonJS or Node <18, install: `npm install node-fetch`
+import fetch from "node-fetch";
 
 const app = express();
 const PORT = 5000;
@@ -16,7 +16,6 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/api/phonepe/initiate", async (req, res) => {
-  console.log("Received request to /api/phonepe/initiate");
   try {
     const { amount, orderId, userDetails } = req.body;
 
@@ -75,7 +74,49 @@ app.post("/api/phonepe/initiate", async (req, res) => {
   }
 });
 
-app.get("/api/phonepe/callback", (req, res) => {
+
+app.get("/api/phonepe/verify", async (req, res) => {
+  const { transactionId } = req.query;
+
+  if (!transactionId) {
+    return res.status(400).json({ success: false, message: "Missing transactionId" });
+  }
+
+  const xVerify =
+    crypto
+      .createHash("sha256")
+      .update(`/pg/v1/status/${MERCHANT_ID}/${transactionId}` + SALT_KEY)
+      .digest("hex") + "###" + SALT_INDEX;
+
+  try {
+    const response = await fetch(
+      `https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/status/${MERCHANT_ID}/${transactionId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-VERIFY": xVerify,
+          "X-MERCHANT-ID": MERCHANT_ID,
+        },
+      }
+    );
+
+    const result = await response.json();
+
+    if (result.success) {
+      return res.json({ success: true, status: result.data.status }); // "COMPLETED" or "FAILED"
+    } else {
+      return res.json({ success: false, status: "FAILED", message: result.message });
+    }
+  } catch (err) {
+    console.error("Error verifying payment:", err);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+
+
+app.get("/payment-tpfc/api/phonepe/callback", (req, res) => {
   const transactionId = req.query.transactionId;
   const bookingId = req.query.bookingId;
 

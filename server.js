@@ -151,6 +151,7 @@ const handlePhonePeCallback = (req, res) => {
 
   console.log("📦 Encoded Response:", responseBase64);
   console.log("📦 Booking ID:", bookingId);
+  console.log("📨 Method:", req.method);
 
   if (!responseBase64 || !bookingId) {
     return res.status(400).send("Missing response or bookingId");

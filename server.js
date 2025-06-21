@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   console.log("Query:", req.query);
   console.log("Body:", req.body);
   next();
-})
+});
 
 app.post("/api/phonepe/initiate", async (req, res) => {
   try {
@@ -167,20 +167,26 @@ app.all("/payment-tpfc/api/phonepe/callback", async (req, res) => {
   console.log("🧪 Body:", req.body);
   console.log("🧪 Query:", req.query);
 
-  if (!responseBase64 || !bookingId) {
-    console.warn("⚠️ Missing response or bookingId");
-    return res.status(200).send("Callback received but missing data");
-  }
-
   try {
-    const decoded = JSON.parse(Buffer.from(responseBase64, "base64").toString("utf-8"));
-    const transactionId = decoded?.data?.transactionId;
+    let transactionId = null;
 
-    if (!transactionId) {
-      return res.status(400).send("Missing transactionId in decoded response");
+    // ✅ Case 1: Encoded base64 response
+    if (responseBase64) {
+      const decoded = JSON.parse(Buffer.from(responseBase64, "base64").toString("utf-8"));
+      transactionId = decoded?.data?.transactionId;
     }
 
-    // You could update your DB here based on transactionId or bookingId
+    // ✅ Case 2: Direct values in body (fallback)
+    if (!transactionId && req.body?.transactionId) {
+      transactionId = req.body.transactionId;
+    }
+
+    if (!transactionId || !bookingId) {
+      console.warn("⚠️ Missing transactionId or bookingId");
+      return res.status(400).send("Missing transactionId or bookingId");
+    }
+
+    // Optional: Update DB or trigger email, etc.
 
     const redirectUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
     return res.redirect(redirectUrl);
@@ -189,6 +195,7 @@ app.all("/payment-tpfc/api/phonepe/callback", async (req, res) => {
     return res.status(500).send("Internal Server Error");
   }
 });
+
 
 
 

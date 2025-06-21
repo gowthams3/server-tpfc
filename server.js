@@ -13,6 +13,7 @@ const SALT_INDEX = process.env.SALT_INDEX;
 // const REDIRECT_URL = process.env.REDIRECT_URL;
 
 app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.post("/api/phonepe/initiate", async (req, res) => {

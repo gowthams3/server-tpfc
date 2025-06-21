@@ -16,6 +16,15 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+app.use((req, res, next) => {
+  console.log("🔍 Incoming Request");
+  console.log("Method:", req.method);
+  console.log("Headers:", req.headers);
+  console.log("Query:", req.query);
+  console.log("Body:", req.body);
+  next();
+})
+
 app.post("/api/phonepe/initiate", async (req, res) => {
   try {
     const { amount, orderId, userDetails } = req.body;
@@ -145,36 +154,40 @@ app.all("/payment-tpfc/api/phonepe/verify", async (req, res) => {
 // });
 
 
-app.post("/payment-tpfc/api/phonepe/callback", async (req, res) => {
-  const responseBase64 = req.body?.response || req.query?.response;
+app.all("/payment-tpfc/api/phonepe/callback", async (req, res) => {
+  const method = req.method;
+  const responseEncoded =
+    req.body?.response ||
+    req.query?.response ||
+    (typeof req.body === "string" ? req.body : null); // fallback if body is a raw string
   const bookingId = req.query?.bookingId;
 
-  console.log("📦 Encoded Response:", responseBase64);
+  console.log("📨 Method:", method);
+  console.log("📦 Encoded Response:", responseEncoded);
   console.log("📦 Booking ID:", bookingId);
-  console.log("📨 Method:", req.method);
 
-  if (!responseBase64 || !bookingId) {
-    console.warn("⚠️ Missing response or bookingId");
+  if (!responseEncoded || !bookingId) {
     return res.status(200).send("Callback received but missing data");
   }
 
   try {
-    const decoded = JSON.parse(Buffer.from(responseBase64, "base64").toString("utf-8"));
+    const decoded = JSON.parse(
+      Buffer.from(responseEncoded, "base64").toString("utf-8")
+    );
     const transactionId = decoded?.data?.transactionId;
 
     if (!transactionId) {
       return res.status(400).send("Missing transactionId in decoded response");
     }
 
-    // Optional: Save to DB here if needed
-
     const redirectUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
     return res.redirect(redirectUrl);
   } catch (error) {
-    console.error("❌ Callback decode error:", error);
+    console.error("❌ Decode error:", error);
     return res.status(500).send("Internal Server Error");
   }
 });
+
 
 
 // // 👇 Place these two lines after your route handlers

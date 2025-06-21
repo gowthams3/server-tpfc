@@ -183,6 +183,8 @@ app.all("/payment-tpfc/api/phonepe/callback", async (req, res) => {
       transactionId = req.body.transactionId;
     }
 
+    console.log("mine transactionId", transactionId)
+
     if (!transactionId || !bookingId) {
       console.warn("⚠️ Missing transactionId or bookingId");
       return res.status(400).send("Missing transactionId or bookingId");

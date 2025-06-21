@@ -116,17 +116,19 @@ app.all("/payment-tpfc/api/phonepe/verify", async (req, res) => {
 
 
 
-app.all("/payment-tpfc/api/phonepe/callback", (req, res) => {
+app.post("/payment-tpfc/api/phonepe/callback", (req, res) => {
   const transactionId = req.body.transactionId || req.query.transactionId;
   const bookingId = req.body.bookingId || req.query.bookingId;
 
   if (!transactionId || !bookingId) {
+    console.error("Callback error:", { body: req.body, query: req.query });
     return res.status(400).send("Missing transactionId or bookingId");
   }
 
   const frontendUrl = `https://tpfc.in/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
-  res.redirect(frontendUrl);
+  return res.redirect(frontendUrl);
 });
+
 
 
 app.listen(PORT, () => {

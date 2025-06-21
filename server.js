@@ -19,8 +19,7 @@ app.post("/api/phonepe/initiate", async (req, res) => {
   try {
     const { amount, orderId, userDetails } = req.body;
 
-    // const redirectUrl = `${process.env.BASE_URL}payment-tpfc/api/phonepe/callback?bookingId=${orderId}`;
-    const redirectUrl = `${process.env.BASE_URL}api/phonepe/callback?bookingId=${orderId}`;
+    const redirectUrl = `${process.env.BASE_URL}payment-tpfc/api/phonepe/callback?bookingId=${orderId}`;
 
     const payload = {
       merchantId: MERCHANT_ID,
@@ -76,7 +75,7 @@ app.post("/api/phonepe/initiate", async (req, res) => {
 });
 
 
-app.get("/api/phonepe/verify", async (req, res) => {
+app.get("/payment-tpfc/api/phonepe/verify", async (req, res) => {
   const { transactionId } = req.query;
 
   if (!transactionId) {
@@ -118,7 +117,6 @@ app.get("/api/phonepe/verify", async (req, res) => {
 
 
 app.get("/payment-tpfc/api/phonepe/callback", (req, res) => {
-  console.log("callback running")
   const transactionId = req.query.transactionId;
   const bookingId = req.query.bookingId;
 

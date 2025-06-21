@@ -117,6 +117,9 @@ app.all("/payment-tpfc/api/phonepe/verify", async (req, res) => {
 
 
 app.post("/payment-tpfc/api/phonepe/callback", (req, res) => {
+  console.log("Callback received:", req.body);
+  console.log("Callback received:", req.query);
+  
   const transactionId = req.body.transactionId || req.query.transactionId;
   const bookingId = req.body.bookingId || req.query.bookingId;
 

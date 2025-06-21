@@ -171,27 +171,33 @@ app.all("/payment-tpfc/api/phonepe/callback", async (req, res) => {
 
   try {
     let transactionId = null;
+    let decoded = null;
 
-    // ✅ Case 1: Encoded base64 response
+    // ✅ Case 1: If response is base64 encoded
     if (responseBase64) {
-      const decoded = JSON.parse(Buffer.from(responseBase64, "base64").toString("utf-8"));
+      const decodedJson = Buffer.from(responseBase64, "base64").toString("utf-8");
+      console.log("🧾 Decoded JSON:", decodedJson);
+
+      decoded = JSON.parse(decodedJson);
       transactionId = decoded?.data?.transactionId;
+
+      console.log("🔍 Decoded Transaction ID:", transactionId);
     }
 
-    // ✅ Case 2: Direct values in body (fallback)
+    // ✅ Case 2: fallback (if not encoded)
     if (!transactionId && req.body?.transactionId) {
       transactionId = req.body.transactionId;
+      console.log("🔁 Fallback Transaction ID (raw body):", transactionId);
     }
-
-    console.log("mine transactionId", transactionId)
 
     if (!transactionId || !bookingId) {
       console.warn("⚠️ Missing transactionId or bookingId");
       return res.status(400).send("Missing transactionId or bookingId");
     }
 
-    // Optional: Update DB or trigger email, etc.
+    // 🛠 Optional: Save to DB or log somewhere else
 
+    // 🔗 Redirect after logging
     const redirectUrl = `http://localhost:5173/payment-tpfc/booking-success?transactionId=${transactionId}&bookingId=${bookingId}`;
     return res.redirect(redirectUrl);
   } catch (error) {
@@ -199,7 +205,6 @@ app.all("/payment-tpfc/api/phonepe/callback", async (req, res) => {
     return res.status(500).send("Internal Server Error");
   }
 });
-
 
 
 
